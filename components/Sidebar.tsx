@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { GoSignOut } from 'react-icons/go';
-import { PiUserLight } from 'react-icons/pi';
+import { PiUserCircleThin } from 'react-icons/pi';
+import Image from 'next/image';
 
 const categories = [
   { id: 1, name: 'Work', color: '#1c7ed6' },
@@ -41,6 +42,18 @@ const Sidebar = () => {
   return (
     <aside className='bg-[#F4F4F4] w-full h-full px-8 py-10 rounded-2xl flex flex-col justify-between'>
       <div className='flex flex-col gap-12'>
+        <div className='flex items-center gap-2 text-md tracking-wider -mb-5'>
+          <PiUserCircleThin size={22} />
+          <p>Nasaee</p>
+          <p>Madadam</p>
+          <Image
+            src='https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Cat.png'
+            alt='Cat'
+            width='30'
+            height='30'
+            className='-mt-3'
+          />
+        </div>
         <MainHeaderTitle>Menu</MainHeaderTitle>
         <nav className='flex flex-col gap-8'>
           {menu.map((section) => {
@@ -86,11 +99,6 @@ const Sidebar = () => {
       </div>
 
       <div className='flex flex-col gap-6'>
-        <div className='flex items-center gap-2 tracking-wider pl-3'>
-          <PiUserLight size={18} />
-          <p>Nasaee</p>
-          <p>Madadam</p>
-        </div>
         <Button
           variant='ghost'
           className='flex w-full justify-start hover:bg-gray-200 cursor-pointer tracking-wider'
