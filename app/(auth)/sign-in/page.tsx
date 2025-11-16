@@ -4,26 +4,30 @@ import CustomInput from '@/components/input/CustomInput';
 import MainHeaderTitle from '@/components/MainHeaderTitle';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 
 const SignInpage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Perform sign-in logic here
+    // After successful sign-in, redirect (replace) to the desired page
+    router.push('/upcoming');
+  };
+
   return (
     <div className='min-w-[380px] md:min-w-[420px] flex flex-col gap-8'>
       <MainHeaderTitle>Sign In</MainHeaderTitle>
-      <form className='flex flex-col gap-6'>
-        <CustomInput
-          name='email'
-          type='email'
-          placeholder='Email address'
-          required
-        />
+      <form className='flex flex-col gap-6' onSubmit={onSubmit}>
+        <CustomInput name='email' type='email' placeholder='Email address' />
         <CustomInput
           name='password'
           type={showPassword ? 'text' : 'password'}
           placeholder='Password'
-          required
           suffixIcon={
             showPassword ? (
               <AiOutlineEye
