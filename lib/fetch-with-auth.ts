@@ -1,39 +1,56 @@
-// actions/auth.ts
-'use server';
+// lib/fetch-with-auth.ts
+import { cookies } from 'next/headers';
+import { API_BASE_URL } from './env';
 
-import { API_BASE_URL } from '@/lib/env';
-import type { RegisterResponse } from '@/types/typse';
-
-export async function registerAction(
-  formData: FormData
-): Promise<RegisterResponse> {
-  const payload = {
-    first_name: formData.get('firstName'),
-    last_name: formData.get('lastName'),
-    email: formData.get('email'),
-    password: formData.get('password'),
-  };
-
-  const res = await fetch(`${API_BASE_URL}/auth/register`, {
+async function refreshAccessToken() {
+  const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify(payload),
+    headers: {
+      Cookie: cookies().toString(),
+    },
   });
 
-  // ⛔ ถ้า error → โยนออกไปเลย
-  if (!res.ok) {
-    let message = 'Register failed';
+  if (!res.ok) return null;
 
-    try {
-      const json = await res.json();
-      if (json?.error) message = json.error;
-    } catch {}
+  const data = await res.json();
+  return data.access_token as string;
+}
 
-    throw new Error(message);
+export async function fetchWithAuth(
+  path: string,
+  init: RequestInit = {}
+): Promise<Response> {
+  const baseInit: RequestInit = {
+    ...init,
+    credentials: 'include',
+    headers: {
+      ...(init.headers || {}),
+      Cookie: cookies().toString(),
+    },
+  };
+
+  const res = await fetch(`${API_BASE_URL}${path}`, baseInit);
+
+  if (res.status !== 401) {
+    return res;
   }
 
-  // ✔ success → parse JSON ตาม type RegisterResponse
-  const data = (await res.json()) as RegisterResponse;
-  return data;
+  // ลอง refresh access token
+  const newAccessToken = await refreshAccessToken();
+  if (!newAccessToken) {
+    // refresh ไม่ได้แล้ว → ให้ caller ตัดสินใจ (เช่น redirect /sign-in)
+    return res;
+  }
+
+  const retryInit: RequestInit = {
+    ...baseInit,
+    headers: {
+      ...(baseInit.headers || {}),
+      Authorization: `Bearer ${newAccessToken}`,
+    },
+  };
+
+  const retryRes = await fetch(`${API_BASE_URL}${path}`, retryInit);
+  return retryRes;
 }
