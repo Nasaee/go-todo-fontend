@@ -16,7 +16,7 @@ const Home = () => {
         variant='default'
         className='bg-primary w-full text-lg tracking-wider text-gray-800 py-6'
       >
-        Get Started
+        <Link href='/sign-up'>Get Started</Link>
       </Button>
       <p className='text-md tracking-wider text-black'>
         Already have an account?{' '}

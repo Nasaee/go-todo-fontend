@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Quicksand } from 'next/font/google';
 import './globals.css';
+import { Providers } from '@/providers/Providers';
 
 // const oswald = Oswald({
 //   variable: '--font-oswald',
@@ -32,7 +33,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <body className={`${quicksand.variable} antialiased`}>{children}</body>
+      <Providers>
+        <body className={`${quicksand.variable} antialiased`}>{children}</body>
+      </Providers>
     </html>
   );
 }
