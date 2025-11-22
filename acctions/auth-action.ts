@@ -39,7 +39,7 @@ export async function registerAction(formData: FormData) {
     maxAge: 60 * 60,
   });
 
-  redirect('/today');
+  redirect('/upcoming');
 }
 
 export async function loginAction(formData: FormData): Promise<LoginResponse> {

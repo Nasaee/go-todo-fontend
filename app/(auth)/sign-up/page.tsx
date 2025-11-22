@@ -3,6 +3,7 @@
 import { registerAction } from '@/acctions/auth-action';
 import CustomInput from '@/components/input/CustomInput';
 import MainHeaderTitle from '@/components/MainHeaderTitle';
+import { SpinnerCustom } from '@/components/SpinnerCustom';
 import { Button } from '@/components/ui/button';
 import { registerSchema, RegisterSchema } from '@/schemas/auth-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -137,7 +138,7 @@ const SignUpPage = () => {
           className='bg-primary py-4 text-md text-gray-800 tracking-wider'
           disabled={isPending}
         >
-          Sign Up
+          {isPending ? <SpinnerCustom /> : 'Sign Up'}
         </Button>
 
         <p className='text-lg tracking-wider text-black text-center'>
