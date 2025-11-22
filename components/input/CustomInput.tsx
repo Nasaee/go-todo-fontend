@@ -20,7 +20,9 @@ const CustomInput = ({
     <div className={cn('relative', containterClassName)}>
       <Input className={cn('w-full', inputClassName)} {...props} />
       {props.error && (
-        <p className='text-red-500 text-xs mt-1'>{props.error}</p>
+        <p className=' absolute -bottom-4.5 pl-2 text-red-500 text-xs mt-1'>
+          {props.error}
+        </p>
       )}
       {prefixIcon && <div className=''>{prefixIcon}</div>}
       {suffixIcon && (

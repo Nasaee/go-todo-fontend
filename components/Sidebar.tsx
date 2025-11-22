@@ -8,6 +8,7 @@ import { Button } from './ui/button';
 import { GoSignOut } from 'react-icons/go';
 import { PiUserCircleThin } from 'react-icons/pi';
 import Image from 'next/image';
+import { logoutAction } from '@/acctions/auth-action';
 
 const categories = [
   { id: 1, name: 'Work', color: '#1c7ed6' },
@@ -99,13 +100,15 @@ const Sidebar = () => {
       </div>
 
       <div className='flex flex-col gap-6'>
-        <Button
-          variant='ghost'
-          className='flex w-full justify-start hover:bg-gray-200 cursor-pointer tracking-wider'
-        >
-          <GoSignOut />
-          <span>Sign out</span>
-        </Button>
+        <form action={logoutAction}>
+          <Button
+            variant='ghost'
+            className='flex w-full justify-start hover:bg-gray-200 cursor-pointer tracking-wider'
+          >
+            <GoSignOut />
+            <span>Sign out</span>
+          </Button>
+        </form>
       </div>
     </aside>
   );

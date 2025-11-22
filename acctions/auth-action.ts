@@ -1,60 +1,95 @@
 'use server';
 
 import { API_BASE_URL } from '@/lib/env';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import type { LoginResponse, RegisterResponse } from '@/types/typse';
 
 export async function registerAction(formData: FormData) {
-  const first_name = formData.get('firstName') as string;
-  const last_name = formData.get('lastName') as string;
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-
   const payload = {
-    first_name,
-    last_name,
-    email,
-    password,
+    first_name: formData.get('firstName'),
+    last_name: formData.get('lastName'),
+    email: formData.get('email'),
+    password: formData.get('password'),
   };
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      // ให้ Go ส่ง/รับ cookie ได้ (เช่น refresh token)
-      credentials: 'include',
-      body: JSON.stringify(payload),
-    });
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
 
-    if (!res.ok) {
-      // พยายามอ่าน error body จาก backend
-      let errorMessage = 'Register failed';
-      try {
-        const errBody = await res.json();
-        errorMessage = errBody.error || errorMessage;
-      } catch {
-        // ถ้า parse json ไม่ได้ก็ใช้ข้อความ default ไป
-      }
+  if (!res.ok) {
+    let message = 'Register failed';
+    try {
+      const json = await res.json();
+      if (json?.error) message = json.error;
+    } catch {}
 
-      return {
-        ok: false,
-        error: errorMessage,
-        status: res.status,
-      };
-    }
-
-    const data = await res.json();
-
-    // data = สิ่งที่ backend ส่งกลับมา เช่น user, message ฯลฯ
-    return {
-      ok: true,
-      data,
-    };
-  } catch (err) {
-    console.error('registerAction error:', err);
-    return {
-      ok: false,
-      error: 'Something went wrong while registering',
-    };
+    throw new Error(message);
   }
+
+  const data = (await res.json()) as RegisterResponse;
+
+  const cookieStore = await cookies();
+  cookieStore.set('access_token', data.access_token, {
+    httpOnly: false,
+    path: '/',
+    maxAge: 60 * 60,
+  });
+
+  redirect('/today');
+}
+
+export async function loginAction(formData: FormData): Promise<LoginResponse> {
+  const payload = {
+    email: formData.get('email'),
+    password: formData.get('password'),
+  };
+
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    let message = 'Login failed';
+    try {
+      const json = await res.json();
+      if (json?.error) message = json.error;
+    } catch {}
+
+    throw new Error(message);
+  }
+
+  const data = (await res.json()) as LoginResponse;
+  return data;
+}
+
+export async function logoutAction() {
+  // 1) ยิงไป backend เพื่อลบ refresh_token cookie
+  try {
+    await fetch(`${API_BASE_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include', // สำคัญมาก ต้องมีเพื่อส่ง cookie ไปด้วย
+    });
+  } catch (err) {
+    // จะ log ไว้เฉยๆ ก็ได้ ไม่ต้อง block logout ฝั่ง FE
+    console.error('logout api error', err);
+  }
+
+  // 2) ลบ access_token cookie ฝั่ง Next
+  const cookieStore = await cookies();
+
+  cookieStore.set('access_token', '', {
+    httpOnly: false,
+    path: '/',
+    maxAge: 0, // ให้หมดอายุทันที
+  });
+
+  // 3) เด้งกลับหน้า login
+  redirect('/sign-in');
 }

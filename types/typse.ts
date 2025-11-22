@@ -6,3 +6,13 @@ export interface RegisterResponse {
   };
   access_token: string;
 }
+
+export interface LoginResponse {
+  user: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+  access_token: string;
+}
