@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import MainHeaderTitle from './MainHeaderTitle';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { GoSignOut } from 'react-icons/go';
 import { PiUserCircleThin } from 'react-icons/pi';
 import Image from 'next/image';
-import { logoutAction } from '@/acctions/auth-action';
+import { useMutation } from '@tanstack/react-query';
+import { logout } from '@/lib/auth-api';
+import { useAuthStore } from '@/stores/auth-store';
 
 const categories = [
   { id: 1, name: 'Work', color: '#1c7ed6' },
@@ -38,15 +40,24 @@ const menu = [
 ];
 
 const Sidebar = () => {
+  const router = useRouter();
   const pathname = usePathname();
+  const { user } = useAuthStore();
+
+  const { mutate: logoutUser, isPending } = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      router.replace('/sign-in');
+    },
+  });
 
   return (
     <aside className='bg-[#F4F4F4] w-full h-full px-8 py-10 rounded-2xl flex flex-col justify-between'>
       <div className='flex flex-col gap-12'>
         <div className='flex items-center gap-2 text-md tracking-wider -mb-5'>
           <PiUserCircleThin size={22} />
-          <p>Nasaee</p>
-          <p>Madadam</p>
+          <p>{user?.first_name || ''}</p>
+          <p>{user?.last_name || ''}</p>
           <Image
             src='https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Cat.png'
             alt='Cat'
@@ -100,15 +111,15 @@ const Sidebar = () => {
       </div>
 
       <div className='flex flex-col gap-6'>
-        <form action={logoutAction}>
-          <Button
-            variant='ghost'
-            className='flex w-full justify-start hover:bg-gray-200 cursor-pointer tracking-wider'
-          >
-            <GoSignOut />
-            <span>Sign out</span>
-          </Button>
-        </form>
+        <Button
+          variant='ghost'
+          className='flex w-full justify-start hover:bg-gray-200 cursor-pointer tracking-wider'
+          onClick={() => logoutUser()}
+          disabled={isPending}
+        >
+          <GoSignOut />
+          <span>Sign out</span>
+        </Button>
       </div>
     </aside>
   );

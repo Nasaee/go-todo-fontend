@@ -1,7 +1,9 @@
+// middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_PATHS = ['/sign-in', '/sign-up']; // หน้า public ไม่ต้อง login
+const PUBLIC_PATHS = ['/sign-in', '/sign-up'];
+const DEFAULT_PAGE = '/upcoming';
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -10,31 +12,43 @@ export function middleware(req: NextRequest) {
   const isAuthenticated = Boolean(accessToken);
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
-  // 1) ถ้ายังไม่ login แต่จะเข้าหน้า protected → เด้งไป /login
-  if (!isAuthenticated && !isPublic) {
+  // ✅ เคสพิเศษ: root path "/"
+  if (pathname === '/') {
+    // ล็อกอินแล้ว → ส่งเข้าหน้า default
+    if (isAuthenticated) {
+      return NextResponse.redirect(new URL(DEFAULT_PAGE, req.url));
+    }
+
+    // ยังไม่ล็อกอิน → ส่งไปหน้า sign-in
     const loginUrl = new URL('/sign-in', req.url);
-    // เก็บ path เดิมไว้ เผื่ออยาก redirect กลับ
     loginUrl.searchParams.set('from', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // 2) ถ้า login แล้ว แต่ดันเข้า /login หรือ /register → เด้งไป /today เลย
-  if (isAuthenticated && isPublic) {
-    return NextResponse.redirect(new URL('/today', req.url));
+  // ❌ ยังไม่ login + จะเข้า protected → เด้งไป /sign-in
+  if (!isAuthenticated && !isPublic) {
+    const loginUrl = new URL('/sign-in', req.url);
+    loginUrl.searchParams.set('from', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
-  // 3) ปล่อยให้ไปต่อได้ตามปกติ
+  // ✅ login แล้ว แต่จะเข้า /sign-in หรือ /sign-up → เด้งไป default page
+  if (isAuthenticated && isPublic) {
+    return NextResponse.redirect(new URL(DEFAULT_PAGE, req.url));
+  }
+
   return NextResponse.next();
 }
 
-// บอกว่า middleware นี้ให้ทำงานกับ path ไหนบ้าง
+// ให้ middleware ทำงานเฉพาะ path เหล่านี้
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-    // หรือจะใส่เฉพาะ path ที่ต้องการก็ได้ เช่น:
-    // '/today/:path*',
-    // '/upcoming/:path*',
-    // '/calendar/:path*',
-    // '/category/:path*',
+    '/', // 👈 เพิ่ม root ด้วย
+    '/today/:path*',
+    '/upcoming/:path*',
+    '/calendar/:path*',
+    '/category/:path*',
+    '/sign-in',
+    '/sign-up',
   ],
 };

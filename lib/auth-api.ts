@@ -1,0 +1,45 @@
+'use client';
+
+import {
+  clearAccessTokenCookie,
+  setAccessTokenCookie,
+} from './access-token-cookie';
+import type { RegisterPayload, RegisterResponse, User } from '@/types/types';
+import { baseApi } from './api-client.ts';
+import { useAuthStore } from '@/stores/auth-store';
+
+const registerUser = async (payload: RegisterPayload): Promise<User> => {
+  try {
+    const res = await baseApi.post<RegisterResponse>('/auth/register', payload);
+
+    const { access_token, access_expires, user } = res.data;
+
+    // เก็บ access_token ลง cookie ตามเวลา access_expires ที่ backend ส่งมา
+    setAccessTokenCookie(access_token, access_expires);
+
+    return user;
+  } catch (err: any) {
+    // ดึง message จาก backend ถ้ามี
+    if (err.response?.data?.error) {
+      throw new Error(err.response.data.message);
+    }
+    throw new Error(err.message ?? 'Register failed');
+  }
+};
+
+const logout = async () => {
+  try {
+    await baseApi.post('/auth/logout'); // ให้ backend ลบ refresh_token (HttpOnly)
+  } catch (err) {
+    // ถ้า error 401/500 ก็ไม่เป็นไร เราจะเคลียร์ฝั่ง client ต่ออยู่ดี
+    console.error('logout error', err);
+  }
+
+  // เคลียร์ access_token ฝั่ง client
+  clearAccessTokenCookie();
+
+  // เคลียร์ user ใน Zustand
+  useAuthStore.getState().clearUser();
+};
+
+export { registerUser, logout };

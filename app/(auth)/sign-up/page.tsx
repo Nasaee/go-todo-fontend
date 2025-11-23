@@ -5,21 +5,40 @@ import CustomInput from '@/components/input/CustomInput';
 import MainHeaderTitle from '@/components/MainHeaderTitle';
 import { SpinnerCustom } from '@/components/SpinnerCustom';
 import { Button } from '@/components/ui/button';
+import { registerUser } from '@/lib/auth-api';
 import { registerSchema, RegisterSchema } from '@/schemas/auth-schema';
+import { useAuthStore } from '@/stores/auth-store';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useEffect, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 
 const SignUpPage = () => {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState({
     password: false,
     confirmPassword: false,
   });
 
-  const [isPending, startTransition] = useTransition();
   const [serverError, setServerError] = useState('');
+
+  const { setUser } = useAuthStore();
+
+  const { mutate: createUser, isPending } = useMutation({
+    mutationFn: registerUser,
+    onSuccess: (user) => {
+      setUser(user);
+      router.push('/upcoming');
+    },
+    onError: (err: any) => {
+      console.log(err);
+      setServerError(err.message);
+    },
+  });
 
   const {
     register,
@@ -33,23 +52,18 @@ const SignUpPage = () => {
   });
 
   const onSubmit = (value: RegisterSchema) => {
-    const formData = new FormData();
-    Object.entries(value).forEach(([key, value]) => {
-      formData.append(key, value.toString());
-    });
+    setServerError('');
+    const userData = {
+      first_name: value.firstName,
+      last_name: value.lastName,
+      email: value.email,
+      password: value.password,
+    };
 
-    startTransition(async () => {
-      try {
-        await registerAction(formData);
-      } catch (err: any) {
-        setServerError(err.message);
-      }
-    });
+    console.log('data:', userData);
+
+    createUser(userData);
   };
-
-  useEffect(() => {
-    console.log('errors:', errors);
-  }, [errors]);
 
   return (
     <div className='min-w-[380px] md:min-w-[420px] flex flex-col gap-8'>
