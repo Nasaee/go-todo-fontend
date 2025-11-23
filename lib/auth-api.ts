@@ -42,4 +42,21 @@ const logout = async () => {
   useAuthStore.getState().clearUser();
 };
 
-export { registerUser, logout };
+const login = async (payload: { email: string; password: string }) => {
+  try {
+    const res = await baseApi.post<RegisterResponse>('/auth/login', payload);
+    const { access_token, access_expires, user } = res.data;
+
+    // เก็บ access_token ลง cookie ตามเวลา access_expires ที่ backend ส่งมา
+    setAccessTokenCookie(access_token, access_expires);
+
+    return user;
+  } catch (err: any) {
+    if (err.response?.data?.error) {
+      throw new Error(err.response.data.message);
+    }
+    throw new Error(err.message ?? 'Login failed');
+  }
+};
+
+export { registerUser, logout, login };

@@ -3,31 +3,73 @@
 import CustomInput from '@/components/input/CustomInput';
 import MainHeaderTitle from '@/components/MainHeaderTitle';
 import { Button } from '@/components/ui/button';
+import { login } from '@/lib/auth-api';
+import { DEFAULT_PAGE } from '@/lib/configs';
+import { LoginForm, loginSchema } from '@/schemas/auth-schema';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 
 const SignInpage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const [errorResponse, setErrorResponse] = useState('');
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // Perform sign-in logic here
-    // After successful sign-in, redirect (replace) to the desired page
-    router.push('/upcoming');
+  const { mutate } = useMutation({
+    mutationFn: login,
+    onSuccess: () => {
+      router.push(DEFAULT_PAGE);
+    },
+    onError: (err: any) => {
+      // ปรับข้อความตามรูปแบบ error ของ backend
+      const message =
+        err?.response?.data?.error ||
+        err?.message ||
+        'Invalid email or password';
+
+      setErrorResponse(message);
+    },
+  });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginForm>({
+    // คือการบอกให้ react-hook-form ใช้ Zod schema เป็นตัว validate form ให้เรา
+    resolver: zodResolver(loginSchema),
+    // คือการกำหนดว่า จะ validate form ตอนไหน
+    mode: 'onSubmit', // validate ตอนกดปุ่ม Submit เท่านั้น
+  });
+
+  const onSubmit = (value: LoginForm) => {
+    setErrorResponse('');
+    mutate(value);
   };
 
   return (
     <div className='min-w-[380px] md:min-w-[420px] flex flex-col gap-8'>
       <MainHeaderTitle>Sign In</MainHeaderTitle>
-      <form className='flex flex-col gap-6' onSubmit={onSubmit}>
-        <CustomInput name='email' type='email' placeholder='Email address' />
+      <form className='flex flex-col gap-6' onSubmit={handleSubmit(onSubmit)}>
+        {errorResponse && (
+          <p className='text-red-500 text-sm text-center bg-red-100 py-2 rounded-sm'>
+            {errorResponse}
+          </p>
+        )}
         <CustomInput
-          name='password'
+          placeholder='Email address'
+          {...register('email')}
+          error={errors?.email?.message}
+        />
+        <CustomInput
           type={showPassword ? 'text' : 'password'}
           placeholder='Password'
+          {...register('password')}
+          error={errors?.password?.message}
           suffixIcon={
             showPassword ? (
               <AiOutlineEye

@@ -1,9 +1,7 @@
 // middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-const PUBLIC_PATHS = ['/sign-in', '/sign-up'];
-const DEFAULT_PAGE = '/upcoming';
+import { DEFAULT_PAGE, PUBLIC_PATHS } from './lib/configs';
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

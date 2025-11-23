@@ -1,6 +1,5 @@
 'use client';
 
-import { registerAction } from '@/acctions/auth-action';
 import CustomInput from '@/components/input/CustomInput';
 import MainHeaderTitle from '@/components/MainHeaderTitle';
 import { SpinnerCustom } from '@/components/SpinnerCustom';
