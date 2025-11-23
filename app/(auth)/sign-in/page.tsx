@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { login } from '@/lib/auth-api';
 import { DEFAULT_PAGE } from '@/lib/configs';
 import { LoginForm, loginSchema } from '@/schemas/auth-schema';
+import { useAuthStore } from '@/stores/auth-store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -19,9 +20,12 @@ const SignInpage = () => {
   const router = useRouter();
   const [errorResponse, setErrorResponse] = useState('');
 
+  const { setUser } = useAuthStore();
+
   const { mutate } = useMutation({
     mutationFn: login,
-    onSuccess: () => {
+    onSuccess: (user) => {
+      setUser(user);
       router.push(DEFAULT_PAGE);
     },
     onError: (err: any) => {
