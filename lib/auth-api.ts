@@ -5,7 +5,7 @@ import {
   setAccessTokenCookie,
 } from './access-token-cookie';
 import type { RegisterPayload, RegisterResponse, User } from '@/types/types';
-import { baseApi } from './api-client.ts';
+import { apiAuth, baseApi } from './api-client.ts';
 import { useAuthStore } from '@/stores/auth-store';
 
 const registerUser = async (payload: RegisterPayload): Promise<User> => {
@@ -20,7 +20,7 @@ const registerUser = async (payload: RegisterPayload): Promise<User> => {
     return user;
   } catch (err: any) {
     // ดึง message จาก backend ถ้ามี
-    if (err.response?.data?.error) {
+    if (err.response?.data?.message) {
       throw new Error(err.response.data.message);
     }
     throw new Error(err.message ?? 'Register failed');
@@ -52,11 +52,35 @@ const login = async (payload: { email: string; password: string }) => {
 
     return user;
   } catch (err: any) {
-    if (err.response?.data?.error) {
+    if (err.response?.data?.message) {
       throw new Error(err.response.data.message);
     }
     throw new Error(err.message ?? 'Login failed');
   }
 };
 
-export { registerUser, logout, login };
+const createCategory = async (name: string) => {
+  try {
+    const res = await apiAuth.post('/todo-groups', { name });
+    return res.data;
+  } catch (err: any) {
+    if (err.response?.data?.message) {
+      throw new Error(err.response.data.message);
+    }
+    throw new Error(err.message ?? 'Create category failed');
+  }
+};
+
+const getAllCategories = async () => {
+  try {
+    const res = await apiAuth.get('/todo-groups');
+    return res.data;
+  } catch (err: any) {
+    if (err.response?.data?.message) {
+      throw new Error(err.response.data.message);
+    }
+    throw new Error(err.message ?? 'Get categories failed');
+  }
+};
+
+export { registerUser, logout, login, createCategory, getAllCategories };
