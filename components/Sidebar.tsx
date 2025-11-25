@@ -8,8 +8,8 @@ import { Button } from './ui/button';
 import { GoSignOut } from 'react-icons/go';
 import { PiUserCircleThin } from 'react-icons/pi';
 import Image from 'next/image';
-import { useMutation } from '@tanstack/react-query';
-import { logout } from '@/lib/auth-api';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { getAllCategories, logout } from '@/lib/auth-api';
 import { useAuthStore } from '@/stores/auth-store';
 import { FiPlus } from 'react-icons/fi';
 import { useState } from 'react';
@@ -47,6 +47,11 @@ const Sidebar = () => {
   const { user } = useAuthStore();
   const [openCreateCategory, setOpenCreateCategory] = useState(false);
 
+  const { data } = useQuery({
+    queryKey: ['getAllCategories'],
+    queryFn: getAllCategories,
+  });
+
   const { mutate: logoutUser, isPending } = useMutation({
     mutationFn: logout,
     onSuccess: () => {
@@ -79,7 +84,7 @@ const Sidebar = () => {
               <ul className='text-lg'>
                 {taskMenu?.children?.map((item) => {
                   const isActive = pathname.startsWith(item.link);
-                  const isGroupMenu = item.link.startsWith('/category/');
+
                   return (
                     <li key={item.title}>
                       <Link
@@ -91,15 +96,6 @@ const Sidebar = () => {
                             : 'hover:bg-gray-200'
                         )}
                       >
-                        {isGroupMenu && 'color' in item && (
-                          <span
-                            className='w-4 h-3 rounded-full inline-block mr-2'
-                            style={{
-                              backgroundColor: (item as { color: string })
-                                .color,
-                            }}
-                          ></span>
-                        )}{' '}
                         {item.title}
                       </Link>
                     </li>
@@ -109,16 +105,17 @@ const Sidebar = () => {
             </div>
             <div>
               <h2 className='text-xl font-bold text-gray-700 mb-2'>
-                {listMenu.title}
+                Categories
               </h2>
               <ul className='text-lg'>
-                {listMenu?.children?.map((item) => {
-                  const isActive = pathname.startsWith(item.link);
-                  const isGroupMenu = item.link.startsWith('/category/');
+                {data?.map((item) => {
+                  const href = `/category/${item.id}`;
+                  const isActive = pathname.startsWith(href);
+
                   return (
-                    <li key={item.title}>
+                    <li key={item.id}>
                       <Link
-                        href={item.link}
+                        href={href}
                         className={cn(
                           'pl-6 pr-4 py-2 rounded-full text-gray-500 transition-colors duration-300 ease-in-out tracking-wide flex items-center',
                           isActive
@@ -126,16 +123,13 @@ const Sidebar = () => {
                             : 'hover:bg-gray-200'
                         )}
                       >
-                        {isGroupMenu && 'color' in item && (
-                          <span
-                            className='w-4 h-3 rounded-full inline-block mr-2'
-                            style={{
-                              backgroundColor: (item as { color: string })
-                                .color,
-                            }}
-                          ></span>
-                        )}{' '}
-                        {item.title}
+                        <span
+                          className='size-5 rounded-sm inline-block mr-2'
+                          style={{
+                            backgroundColor: item.color,
+                          }}
+                        ></span>
+                        {item.name}
                       </Link>
                     </li>
                   );

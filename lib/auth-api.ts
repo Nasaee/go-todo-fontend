@@ -4,7 +4,12 @@ import {
   clearAccessTokenCookie,
   setAccessTokenCookie,
 } from './access-token-cookie';
-import type { RegisterPayload, RegisterResponse, User } from '@/types/types';
+import type {
+  Category,
+  RegisterPayload,
+  RegisterResponse,
+  User,
+} from '@/types/types';
 import { apiAuth, baseApi } from './api-client.ts';
 import { useAuthStore } from '@/stores/auth-store';
 
@@ -59,9 +64,10 @@ const login = async (payload: { email: string; password: string }) => {
   }
 };
 
-const createCategory = async (name: string) => {
+const createCategory = async (data: { name: string; color: string }) => {
   try {
-    const res = await apiAuth.post('/todo-groups', { name });
+    console.log(data);
+    const res = await apiAuth.post('/todo-groups', data);
     return res.data;
   } catch (err: any) {
     if (err.response?.data?.message) {
@@ -71,7 +77,7 @@ const createCategory = async (name: string) => {
   }
 };
 
-const getAllCategories = async () => {
+const getAllCategories = async (): Promise<Category[]> => {
   try {
     const res = await apiAuth.get('/todo-groups');
     return res.data;
