@@ -30,17 +30,6 @@ const taskMenu = {
   ],
 };
 
-const listMenu = {
-  title: 'Categories',
-  children: categories?.map((category) => {
-    return {
-      title: category.name,
-      link: `/category/${category.id}`,
-      color: category.color,
-    };
-  }),
-};
-
 const Sidebar = () => {
   const router = useRouter();
   const pathname = usePathname();

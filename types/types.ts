@@ -29,3 +29,11 @@ export interface Category {
   created_at: string;
   updated_at: string;
 }
+
+export interface TaskForm {
+  title: string;
+  description: string;
+  date_start: Date | null;
+  date_end: Date | null;
+  todo_group_id: number;
+}

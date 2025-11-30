@@ -1,20 +1,16 @@
 import { cn } from '@/lib/utils';
-import { Input } from '../ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
-interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
+interface Props extends React.InputHTMLAttributes<HTMLTextAreaElement> {
   containterClassName?: string;
   inputClassName?: string;
   label?: string;
   error?: string;
-  prefixIcon?: React.ReactNode;
-  suffixIcon?: React.ReactNode;
   required?: boolean;
 }
 
-const CustomInput = ({
+const CustomTextArea = ({
   label,
-  prefixIcon,
-  suffixIcon,
   containterClassName,
   inputClassName,
   required = false,
@@ -28,20 +24,14 @@ const CustomInput = ({
           {required && <span className='text-red-500'>*</span>}
         </label>
       )}
-      <Input className={cn('w-full', inputClassName)} {...props} />
+      <Textarea className={cn('w-full', inputClassName)} {...props} />
       {props.error && (
         <p className=' absolute -bottom-4.5 pl-2 text-red-500 text-xs mt-1'>
           {props.error}
         </p>
       )}
-      {prefixIcon && <div className=''>{prefixIcon}</div>}
-      {suffixIcon && (
-        <div className='absolute right-2 top-1/2 transform -translate-y-1/2'>
-          {suffixIcon}
-        </div>
-      )}
     </div>
   );
 };
 
-export default CustomInput;
+export default CustomTextArea;

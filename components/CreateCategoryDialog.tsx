@@ -130,10 +130,15 @@ const CreateCategoryDialog = ({ open, onClose }: Props) => {
           </div>
         </div>
         <DialogFooter>
-          <Button variant='outline' onClick={handleClose} disabled={isPending}>
+          <Button
+            variant='outline'
+            onClick={handleClose}
+            disabled={isPending}
+            className='w-20'
+          >
             Cancel
           </Button>
-          <Button onClick={onSubmit} disabled={isPending}>
+          <Button onClick={onSubmit} disabled={isPending} className='w-20'>
             {isPending ? <SpinnerCustom /> : 'Add'}
           </Button>
         </DialogFooter>
